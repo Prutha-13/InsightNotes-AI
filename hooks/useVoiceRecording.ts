@@ -2,6 +2,9 @@
 
 import { useState, useRef, useCallback } from "react";
 
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
+type AnySpeechRecognition = any;
+
 interface UseVoiceRecordingReturn {
   isRecording: boolean;
   isSupported: boolean;
@@ -14,18 +17,18 @@ interface UseVoiceRecordingReturn {
 export function useVoiceRecording(onTranscript: (text: string) => void): UseVoiceRecordingReturn {
   const [isRecording, setIsRecording] = useState(false);
   const [transcript, setTranscript] = useState("");
-  const recognitionRef = useRef<any>(null);
+  const recognitionRef = useRef<AnySpeechRecognition>(null);
 
-  const isSupported = typeof window !== "undefined" &&
+  const isSupported =
+    typeof window !== "undefined" &&
     ("SpeechRecognition" in window || "webkitSpeechRecognition" in window);
 
   const startRecording = useCallback(() => {
     if (!isSupported) return;
 
-    const SpeechRecognition =
-      (window as any).SpeechRecognition ||
-      (window as any).webkitSpeechRecognition;
-    const recognition = new SpeechRecognition();
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    const SpeechRecognitionAPI = (window as any).SpeechRecognition || (window as any).webkitSpeechRecognition;
+    const recognition = new SpeechRecognitionAPI();
 
     recognition.continuous = true;
     recognition.interimResults = true;
@@ -33,7 +36,7 @@ export function useVoiceRecording(onTranscript: (text: string) => void): UseVoic
 
     let finalTranscript = "";
 
-    recognition.onresult = (event: any) => {
+    recognition.onresult = (event: AnySpeechRecognition) => {
       let interim = "";
       for (let i = event.resultIndex; i < event.results.length; i++) {
         const result = event.results[i];
@@ -48,7 +51,7 @@ export function useVoiceRecording(onTranscript: (text: string) => void): UseVoic
       onTranscript(current);
     };
 
-    recognition.onerror = (event: any) => {
+    recognition.onerror = (event: AnySpeechRecognition) => {
       console.error("Speech recognition error:", event.error);
       setIsRecording(false);
     };
