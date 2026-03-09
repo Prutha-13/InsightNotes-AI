@@ -14,7 +14,7 @@ interface UseVoiceRecordingReturn {
 export function useVoiceRecording(onTranscript: (text: string) => void): UseVoiceRecordingReturn {
   const [isRecording, setIsRecording] = useState(false);
   const [transcript, setTranscript] = useState("");
-  const recognitionRef = useRef<SpeechRecognition | null>(null);
+  const recognitionRef = useRef<any>(null);
 
   const isSupported = typeof window !== "undefined" &&
     ("SpeechRecognition" in window || "webkitSpeechRecognition" in window);
@@ -22,7 +22,9 @@ export function useVoiceRecording(onTranscript: (text: string) => void): UseVoic
   const startRecording = useCallback(() => {
     if (!isSupported) return;
 
-    const SpeechRecognition = window.SpeechRecognition || window.webkitSpeechRecognition;
+    const SpeechRecognition =
+      (window as any).SpeechRecognition ||
+      (window as any).webkitSpeechRecognition;
     const recognition = new SpeechRecognition();
 
     recognition.continuous = true;
@@ -31,7 +33,7 @@ export function useVoiceRecording(onTranscript: (text: string) => void): UseVoic
 
     let finalTranscript = "";
 
-    recognition.onresult = (event) => {
+    recognition.onresult = (event: any) => {
       let interim = "";
       for (let i = event.resultIndex; i < event.results.length; i++) {
         const result = event.results[i];
@@ -46,7 +48,7 @@ export function useVoiceRecording(onTranscript: (text: string) => void): UseVoic
       onTranscript(current);
     };
 
-    recognition.onerror = (event) => {
+    recognition.onerror = (event: any) => {
       console.error("Speech recognition error:", event.error);
       setIsRecording(false);
     };
